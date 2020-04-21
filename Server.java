@@ -1,181 +1,124 @@
-// A Java program for a Server 
-import java.net.*; 
-import java.io.*; 
+// File Name Server.java
+import java.net.*;
+import java.io.*;
+import java.util.*;
+import java.util.Scanner;
 import java.math.*;
 
-public class Server 
-{ 
-	//initialize socket and input stream 
-	private Socket		 socket = null; 
-	private ServerSocket server = null; 
-	private DataInputStream din	 = null;
-	private DataOutputStream dout = null;
-	private DataInputStream input = null; 
+public class Server extends Thread {
+   private ServerSocket serverSocket;
+   
+   public static boolean isNumber(String num){
+      try {  
+         Double.parseDouble(num);  
+         return true;
+      } catch(NumberFormatException e){  
+         return false;  
+      }  
+   }
 
-	public static boolean isNumber(String num){
-		try {  
-	    	Double.parseDouble(num);  
-	    	return true;
-	  	} catch(NumberFormatException e){  
-	    	return false;  
-	  	}  
-	}
+   public Server(int port) throws IOException {
+      serverSocket = new ServerSocket(port);
+      // serverSocket.setSoTimeout(10000);
+   }
 
-	// constructor with port 
-	public Server(int port) 
-	{ 
-		// starts server and waits for a connection 
-		try
-		{ 
-			server = new ServerSocket(port); 
-			System.out.println("Server started"); 
+   public void run() {
+      while(true) {
+         try {
+            System.out.println("Waiting for client on port " + 
+            serverSocket.getLocalPort() + "...");
+            Socket server = serverSocket.accept();
 
-			System.out.println("Waiting for a client ..."); 
+            System.out.println("Just connected to " + server.getRemoteSocketAddress());
+            DataInputStream in = new DataInputStream(server.getInputStream());
 
-			socket = server.accept(); 
-			System.out.println("Client accepted"); 
-
-			din = new DataInputStream(socket.getInputStream());  
-			dout = new DataOutputStream(socket.getOutputStream()); 
-			input = new DataInputStream(new BufferedInputStream(socket.getInputStream())); 
-
-		}
-		catch(UnknownHostException u)
-		{
-			System.out.println(u);
-		}
-		catch(IOException i)
-		{
-			System.out.println(i);
-		}
+            Scanner input = new Scanner(server.getInputStream());
+            PrintWriter output = new PrintWriter(server.getOutputStream(), true);
+            String opt = input.nextLine();
+            String firstNumber = input.nextLine();
+            String secondNumber = input.nextLine();
+            BigInteger answer;
 
 
-		String str = ""; 
-		String firstNumber = "";
-		String secondNumber = "";
-		String opt = "";
-		int flag = 0;
-		String line = "";
-		while(socket.isConnected()){  
-		// while(!str.equals("Stop")){  
-			try
-			{
-				// line = input.readUTF();
-				// System.out.println(line);
-				str = input.readUTF(); 
-				System.out.println(str);
-				if(flag == 0){
-					if(str.equals("+") || str.equals("-") || str.equals("*") || str.equals("/")){
-						opt = str;
-						flag = 1;
-						dout.writeUTF("Enter First Number: ");  
-						dout.flush(); 
-					}else{
-						flag = 0;
-						dout.writeUTF("Unknown operation");  
-						dout.flush(); 
-					}
-				}
-				else if(flag == 1){
-					firstNumber = str;
-					// firstNumber = Integer.parseInt(str.trim());
-					if(isNumber(firstNumber)==false){
-						dout.writeUTF("First value: not a number");  
-						dout.flush();
-						flag++;
-					}else{
-						
-						dout.writeUTF("Enter Second Number: ");  
-						dout.flush();
-						flag++;
-					}
-					
-				}else{
-					secondNumber = str;
-					// secondNumber = Integer.parseInt(str.trim());
-					if(isNumber(firstNumber)==false && isNumber(secondNumber) == false){
-						dout.writeUTF("Both values: not numbers");  
-						dout.writeUTF("Enter First Number: ");
-						dout.flush();
-						flag = 1;
-					}
-					else if(isNumber(secondNumber) == false){
-						dout.writeUTF("Second value: not a number");  
-						dout.flush();
-						flag++;
-					}else{
-						
-						flag++;
-						if(opt.equals("+")){
-							BigInteger i1 = new BigInteger(firstNumber);
-							BigInteger i2 = new BigInteger(secondNumber);
-							BigInteger result;
-							result = i1.add(i2);
-							flag = 0;
-							dout.writeUTF("The sum is  "+result);  
-							dout.flush();
-						}else if(opt.equals("-")){
-							BigInteger i1 = new BigInteger(firstNumber);
-							BigInteger i2 = new BigInteger(secondNumber);
-							BigInteger result;
-							result = i1.subtract(i2);
-							flag = 0;
-							dout.writeUTF("The subtract is  "+result);  
-							dout.flush();
-						}else if(opt.equals("*")){
-							BigInteger i1 = new BigInteger(firstNumber);
-							BigInteger i2 = new BigInteger(secondNumber);
-							BigInteger result;
-							result = i1.multiply(i2);
-							flag = 0;
-							dout.writeUTF("The multiply is  "+result);  
-							dout.flush();
-						}else if(opt.equals("/")){
-							if(secondNumber.equals("0")){
-								dout.writeUTF("Divide by 0");  
-								dout.flush();
-							}else{
-								BigInteger i1 = new BigInteger(firstNumber);
-								BigInteger i2 = new BigInteger(secondNumber);
-								BigInteger result;
-								result = i1.divide(i2);
-								flag = 0;
-								dout.writeUTF("The divide is  "+result);  
-								dout.flush();
-							}
-							
-						}
-						 
-						  
-					}	
-				}
-			}
-			catch(IOException i)
-			{
-				System.out.println("Closing connection");
-				
-				System.out.println(i);
-			}				 
-		} 
-		// close the connection
-		try
-		{
-			System.out.println("Closing connection");
-			input.close(); 
-			din.close(); 
-			dout.close(); 
-			socket.close();
-			server.close();
-		}
-		catch(IOException i)
-		{
-			System.out.println(i);
-		}
-			
-	} 
+            if(isNumber(firstNumber)==false && isNumber(secondNumber) == false){
+               output.println("Both values: not numbers");
+            }else if(isNumber(firstNumber)==false){
+               output.println("First value: not a number");
+            }else if(isNumber(secondNumber)==false){
+               output.println("Second value: not a number");
+            }else{
 
-	public static void main(String args[]) 
-	{ 
-		Server server = new Server(5031); 
-	} 
-} 
+               if(opt.equals("+") || opt.equals("-") || opt.equals("*") || opt.equals("/") || opt.equals("gcd")){
+                  if(opt.equals("+")){
+
+                     BigInteger i1 = new BigInteger(firstNumber);
+                     BigInteger i2 = new BigInteger(secondNumber);
+                     answer = i1.add(i2);
+                     output.println("The sum is  "+ answer);
+
+                  }else if(opt.equals("-")){
+
+                     BigInteger i1 = new BigInteger(firstNumber);
+                     BigInteger i2 = new BigInteger(secondNumber);
+                     answer = i1.subtract(i2);
+                     output.println("The subtract is  "+ answer);
+
+                  }else if(opt.equals("*")){
+
+                     BigInteger i1 = new BigInteger(firstNumber);
+                     BigInteger i2 = new BigInteger(secondNumber);
+                     answer = i1.multiply(i2);
+                     output.println("The multiply is  "+ answer);
+
+                  }else if(opt.equals("/")){
+
+                     if(secondNumber.equals("0")){
+                        output.println("Divide by 0"); 
+                     }else{
+                        BigInteger i1 = new BigInteger(firstNumber);
+                        BigInteger i2 = new BigInteger(secondNumber);
+                        answer = i1.divide(i2);
+                        output.println("The divide is  "+ answer);
+                     }
+                  }else if(opt.equals("gcd")){
+
+                     BigInteger i1 = new BigInteger(firstNumber);
+                     BigInteger i2 = new BigInteger(secondNumber);
+                     answer = i1.gcd(i2);
+                     output.println("The gcd is  "+ answer);
+                  }
+
+               }else{
+                  output.println("Unknown operation");  
+               }
+            }
+
+         
+            System.out.println(in.readUTF());
+            DataOutputStream out = new DataOutputStream(server.getOutputStream());
+            out.writeUTF("Thank you for connecting to " + server.getLocalSocketAddress()
+               + "\nGoodbye!");
+            input.close();
+            output.close();
+            server.close();
+            
+         } catch (SocketTimeoutException s) {
+            System.out.println("Socket timed out!");
+            break;
+         } catch (IOException e) {
+            e.printStackTrace();
+            break;
+         }
+      }
+   }
+   
+   public static void main(String [] args) {
+      int port = Integer.parseInt(args[0]);
+      try {
+         Thread t = new Server(port);
+         t.start();
+      } catch (IOException e) {
+         e.printStackTrace();
+      }
+   }
+}

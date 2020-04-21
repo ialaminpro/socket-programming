@@ -1,76 +1,59 @@
-// A Java program for a Client 
-import java.net.*; 
-import java.io.*; 
+// File Name Client.java
+import java.net.*;
+import java.io.*;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
 
-public class Client 
-{ 
-	// initialize socket and input output streams 
-	private Socket socket		 = null; 
-	private BufferedReader input = null; 
-	private DataOutputStream out = null; 
-	private DataInputStream din = null;
+public class Client {
 
-	// constructor to put ip address and port 
-	public Client(String address, int port) 
-	{ 
-		// establish a connection 
-		try
-		{ 
-			socket = new Socket(address, port); 
-			System.out.println("Connected"); 
-			 
-			out = new DataOutputStream(socket.getOutputStream());  
-			input = new BufferedReader(new InputStreamReader(System.in));
-			din = new DataInputStream(socket.getInputStream());
-		}
-		catch(UnknownHostException u)
-		{
-			System.out.println(u);
-		}
-		catch(IOException i)
-		{
-			System.out.println(i);
-		}
+   public static void main(String [] args) {
+      String serverName = args[0];
+      int port = Integer.parseInt(args[1]);
+      try {
+         System.out.println("Connecting to " + serverName + " on port " + port);
+         Socket client = new Socket(serverName, port);
 
-		System.out.println("Enter arithmetic operator"); 
-		String line = "";
-		String line2 = "";
+         System.out.println("Just connected to " + client.getRemoteSocketAddress());
+         OutputStream outToServer = client.getOutputStream();
+         DataOutputStream out = new DataOutputStream(outToServer);
 
-		while(!line.equals("stop")){  
-			try
-			{
-				line = input.readLine(); 
-				out.writeUTF(line);  
-				out.flush(); 
-				line2 = din.readUTF(); 
-				System.out.println(line2); 
-				if(line2.contains("The") == true){
-					System.out.println("Disconnected!");
-				}
-				 
+         Scanner input = new Scanner(client.getInputStream());
+         PrintWriter output = new PrintWriter(client.getOutputStream(), true);
 
-			}
-			catch(IOException i)
-			{
-				System.out.println(i);
-			}  
-		}
-		// close the connection
-		try
-		{
-			input.close();
-			out.close();
-			socket.close();
-		}
-		catch(IOException i)
-		{
-			System.out.println(i);
-		}
-	} 
+         //Set up stream for keyboard entry
+         Scanner userEntry = new Scanner(System.in);
+         String opt;
+         String firstInt, secondInt, answer;
 
-	public static void main(String args[]) 
-	{ 
-		Client client = new Client("127.0.0.1", 5031); 
-	} 
-} 
+         System.out.print("Please input the arithmetic operator: ");
+         opt = userEntry.nextLine();
 
+         System.out.print("Please input the first number: ");
+         firstInt = userEntry.nextLine();
+
+         System.out.print("Please input the second number: ");
+         secondInt = userEntry.nextLine();
+
+         //send the numbers
+         output.println(opt);
+         output.println(firstInt);
+         output.println(secondInt);
+         answer = input.nextLine(); //getting the answer from the server
+         System.out.println("\nSERVER> " + answer);
+
+         
+         
+         
+         out.writeUTF("Hello from " + client.getLocalSocketAddress());
+         InputStream inFromServer = client.getInputStream();
+         DataInputStream in = new DataInputStream(inFromServer);
+         
+         System.out.println("Server says " + in.readUTF());
+         input.close();
+         output.close();
+         client.close();
+      } catch (IOException e) {
+         e.printStackTrace();
+      }
+   }
+}
