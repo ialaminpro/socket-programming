@@ -40,15 +40,17 @@ public class Client {
          output.println(secondInt);
          answer = input.nextLine(); //getting the answer from the server
          System.out.println("\nSERVER> " + answer);
+         System.out.println(input.nextLine());
+         System.out.println(input.nextLine());
 
          
          
          
-         out.writeUTF("Hello from " + client.getLocalSocketAddress());
-         InputStream inFromServer = client.getInputStream();
-         DataInputStream in = new DataInputStream(inFromServer);
+         // out.writeUTF("Hello from " + client.getLocalSocketAddress());
+         // InputStream inFromServer = client.getInputStream();
+         // DataInputStream in = new DataInputStream(inFromServer);
          
-         System.out.println("Server says " + in.readUTF());
+         // System.out.println("Server says " + in.readUTF());
          input.close();
          output.close();
          client.close();

@@ -39,6 +39,10 @@ public class Server extends Thread {
             String secondNumber = input.nextLine();
             BigInteger answer;
 
+            System.out.println("Your are selected "+ opt +" operation");
+            System.out.println("Your first Number is "+firstNumber);
+            System.out.println("Your second Number is "+secondNumber);
+
 
             if(isNumber(firstNumber)==false && isNumber(secondNumber) == false){
                output.println("Both values: not numbers");
@@ -94,10 +98,10 @@ public class Server extends Thread {
             }
 
          
-            System.out.println(in.readUTF());
-            DataOutputStream out = new DataOutputStream(server.getOutputStream());
-            out.writeUTF("Thank you for connecting to " + server.getLocalSocketAddress()
-               + "\nGoodbye!");
+            //System.out.println(in.readUTF());
+            // DataOutputStream out = new DataOutputStream(server.getOutputStream());
+            output.println("Thank you for connecting to " + server.getLocalSocketAddress());
+            output.println("Goodbye!");
             input.close();
             output.close();
             server.close();
